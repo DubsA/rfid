@@ -15,11 +15,9 @@
  * Constructor.
  * Prepares the output pins.
  */
-MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
-					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+MFRC522::MFRC522(	byte chipSelectPin
 				) {
 	_chipSelectPin = chipSelectPin;
-	_resetPowerDownPin = resetPowerDownPin;
 } // End constructor
 
 /**
@@ -188,20 +186,11 @@ void MFRC522::PCD_Init() {
 	pinMode(_chipSelectPin, OUTPUT);
 	digitalWrite(_chipSelectPin, HIGH);
 
-	// Set the resetPowerDownPin as digital output, do not reset or power down.
-	pinMode(_resetPowerDownPin, OUTPUT);
-
 	// Set SPI bus to work with MFRC522 chip.
 	setSPIConfig();
 
-	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
-		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
-		delay(50);
-	}
-	else { // Perform a soft reset
-		PCD_Reset();
-	}
+	// Perform a soft reset
+	PCD_Reset();
 	
 	// When communicating with a PICC we need a timeout if something goes wrong.
 	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
